@@ -8,7 +8,7 @@ import hashlib
 import json
 import datetime
 
-from ._constants import CHATS_DIR, SESSION_TIMEOUT
+from ._constants import CHATS_DIR, LABELED_DIR, SESSION_TIMEOUT
 from ._gpt import gpt
 from ._location import get_position
 from ._bing import bing_search
@@ -22,10 +22,20 @@ def generate_reply(fromcall, message):
     if len(message) == 0:
         return "..."
 
-    if message.lower() in ["reset", "clear"]:
+    # Meta-commands
+    if message.lower() in ["r", "c", "clr", "reset", "clear"]:
         _reset_chat_history(fromcall)
         return "Chat cleared."
 
+    if message.lower() in ["good bot", "gb"]:
+        _apply_label(fromcall, "good")
+        return "Chat labeled as good."
+
+    if message.lower() in ["bad bot", "bb"]:
+        _apply_label(fromcall, "bad")
+        return "Chat labeled as bad."
+
+    # Chat
     messages = _load_chat_history(fromcall)
     messages.append({ "role": "user", "content": message })
     response = _generate_reply(fromcall, messages)
@@ -123,7 +133,12 @@ def _save_chat_history(callsign, messages):
     os.makedirs(CHATS_DIR, exist_ok=True)
     fname = _get_chat_file(callsign)
     with open(fname, "wt") as fh:
-        fh.write(json.dumps({ "callsign": callsign, "time": time.time(), "messages": messages }, indent=4))
+        fh.write(json.dumps({ 
+            "version": 1,
+            "callsign": callsign,
+            "time": time.time(),
+            "messages": messages, 
+        }, indent=4))
 
 
 def _get_chat_file(callsign):
@@ -140,3 +155,22 @@ def _reset_chat_history(callsign):
     if os.path.isfile(fname):
         newname = fname + "." + str(int(time.time() * 1000))
         os.rename(fname, newname)
+
+
+def _apply_label(callsign, label):
+    fname = _get_chat_file(callsign)
+    if os.path.isfile(fname):
+        os.makedirs(LABELED_DIR, exist_ok=True)
+
+        # Read the chat file (for copying)
+        with open(fname, "rt") as fh:
+            text = fh.read()
+
+        # Create a unique filename for the labeled chat
+        text_hash = hashlib.md5(text.encode()).hexdigest().lower()
+        labeled_fname = label + "__" + text_hash + ".json"
+        labeled_fname = os.path.join(LABELED_DIR, labeled_fname)
+
+        # Copy to the the labeled chat file
+        with open(labeled_fname, "wt") as fh:
+            fh.write(text)
