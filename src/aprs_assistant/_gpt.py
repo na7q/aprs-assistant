@@ -19,8 +19,8 @@ def gpt(messages, model="gpt-4o-2024-08-06", json_mode=False, **kwargs):
 
     if json_mode == False:
         response = _oai_client.chat.completions.create(**kwargs)
-        return response.choices[0].message.content
+        return response.choices[0].message
     else:
         kwargs["response_format"] = {"type": "json_object"}
         response = _oai_client.chat.completions.create(**kwargs)
-        return json.loads(response.choices[0].message.content)
+        return json.loads(response.choices[0].message)

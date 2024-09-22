@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 import re
 import os
+import sys
 import time
 import hashlib
 import json
@@ -13,6 +14,11 @@ from ._gpt import gpt
 from ._location import get_position
 from ._bing import bing_search
 from ._bandcond import get_band_conditions
+
+from ._tool_definitions import (
+    TOOL_WEB_SEARCH,
+    TOOL_BAND_CONDITIONS,
+)
 
 MAX_MESSAGES = 20
 
@@ -54,8 +60,6 @@ def _generate_reply(fromcall, messages):
     # Generate the system message
     dts = datetime.datetime.now()
 
-    band_conditions = get_band_conditions()
-    
     position = get_position(fromcall)
     position_str = ""
     if position is not None:
@@ -66,9 +70,6 @@ def _generate_reply(fromcall, messages):
         "content": f"""You are an AI HAM radio operator, with call sign APNGIX. You were created by KK7CMT. You are at home, in your cozy ham shack, monitoring the gobal APRS network. You have a computer and high-speed access to the internet. You and answering questions from other human operators in the field who lack an internet connection. To this end, you are relaying vital information. Questions can be about anything -- not just HAM radio.  You are familiar with HAM conventions and shorthands like QSO, CQ, and 73. The current date and time is {dts}. In all interactions, following US FCC guidelines, you will refrain from using profane or obscene language and avoid expressing overtly political commentary or opinion (reporting news is fine).
 
 At present, you are exchanging messages with the owner of callsign {fromcall}.{position_str}
-
-Current band conditions are as follows:
-{band_conditions}
 """,
     }
     inner_messages.insert(0, system_message)
@@ -80,31 +81,43 @@ Current band conditions are as follows:
     # Let's guess the intent
     inner_messages.append({"role": "user", "content": f"{fromcall} wrote \"{message}\". What are they likely asking?"})
     response = gpt(inner_messages)
-    print(response)
-    inner_messages.append({"role": "assistant", "content": response})
+    print(response.content)
+    inner_messages.append(response)
 
     # Determine if it can be answered directly or if we should search
-    inner_messages.append({ "role": "user", "content": "Based on this, could you answer directly, or would you want to search the web for information first? Most question benefit from search (even if just to verify). Only chit-chat or general knowledge should be answered directly. Answer either 'DIRECT' or 'SEARCH'" })
-    response = gpt(inner_messages)
-    print(response)
-    inner_messages.append({"role": "assistant", "content": response})
+    inner_messages.append({ "role": "user", "content": f"Based on this, invoke any tools or functions that might be helpful to answer {fromcall}'s question OR just answer directly (e.g., if it's just chit-chat)" })
+    response = gpt(
+        inner_messages,
+        tools=[TOOL_WEB_SEARCH, TOOL_BAND_CONDITIONS]
+    )
+    inner_messages.append(response)
 
-    # Search if needed, otherwise answer directly
-    reply = "..."
-    if "SEARCH" in response:
-        inner_messages.append({ "role": "user", "content": "What one standalone query would you issue? Write your answer in perfect JSON, following this schema: { \"query\": QUERY, \"justification\": JUSTIFICATION }" }) 
-        standalone_question = gpt(inner_messages, json_mode=True)["query"]
-        print(f"Searching: {standalone_question}")
-        results = bing_search(standalone_question)
-        print(results)
-        inner_messages.append({ "role": "user", "content": "Here are the results of that web search: " + results })
-        inner_messages.append({ "role": "user", "content": f"Given these results, write an answer to {fromcall}'s original question \"{message}\", exactly as you would write it to them, verbatim. Your response must be as helpful and succinct as possible; at most 10 words can be sent in an APRS response. Remember, {fromcall} does not have access to the internet -- that's why they are using APRS. So do not direct them to websites, and instead convey the most important information directly."})
-        reply = gpt(inner_messages)
-    else:
-        inner_messages.pop()
-        inner_messages.pop()
-        inner_messages.append({ "role": "user", "content": f"Given this intent, write an answer to {fromcall}'s original question \"{message}\", exactly as you would write it to them, verbatim. Your response must be as helpful and succinct as possible; at most 10 words can be sent in an APRS response. Remember, {fromcall} does not have access to the internet -- that's why they are using APRS. So do not direct them to websites, and instead convey the most important information directly."})
-        reply = gpt(inner_messages)
+    # Handle any tool call results
+    if response.tool_calls:
+        for tool_call in response.tool_calls:
+            function_name = tool_call.function.name
+            args = json.loads(tool_call.function.arguments)
+            print(f"Calling: {function_name}")
+
+            # Step 3: Call the function and retrieve results. Append the results to the messages list.
+            if function_name == TOOL_WEB_SEARCH["function"]["name"]:
+                results = bing_search(args["query"])
+            elif function_name == TOOL_BAND_CONDITIONS["function"]["name"]:
+                results = get_band_conditions()
+            else:
+                results = f"Unknown function: {function_name}"
+
+            print(f"Results:\n{results}")
+
+            inner_messages.append({
+                "role":"tool",
+                "tool_call_id":tool_call.id,
+                "name": tool_call.function.name,
+                "content": results
+            })
+
+    inner_messages.append({ "role": "user", "content": f"Given these results, write an answer to {fromcall}'s original question \"{message}\", exactly as you would write it to them, verbatim. Your response must be as helpful and succinct as possible; at most 10 words can be sent in an APRS response. Remember, {fromcall} does not have access to the internet -- that's why they are using APRS. So do not direct them to websites, and instead convey the most important information directly."})
+    reply = gpt(inner_messages).content
 
     if len(reply) > 70: 
         reply = reply[0:70]
@@ -125,7 +138,7 @@ def _load_chat_history(callsign):
             else:
                 return history["messages"]
     else:
-        print(f"{callsign}'s is new. Starting first session.")
+        print(f"{callsign}'s history is empty. Starting new session.")
         return []
 
 
