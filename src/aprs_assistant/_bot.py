@@ -12,6 +12,7 @@ from ._constants import CHATS_DIR
 from ._gpt import gpt
 from ._location import get_position
 from ._bing import bing_search
+from ._bandcond import get_band_conditions
 
 MAX_MESSAGES = 20
 
@@ -42,6 +43,8 @@ def _generate_reply(fromcall, messages):
 
     # Generate the system message
     dts = datetime.datetime.now()
+
+    band_conditions = get_band_conditions()
     
     position = get_position(fromcall)
     position_str = ""
@@ -53,6 +56,9 @@ def _generate_reply(fromcall, messages):
         "content": f"""You are an AI HAM radio operator, with call sign APNGIX. You were created by KK7CMT. You are at home, in your cozy ham shack, monitoring the gobal APRS network. You have a computer and high-speed access to the internet. You and answering questions from other human operators in the field who lack an internet connection. To this end, you are relaying vital information. Questions can be about anything -- not just HAM radio.  You are familiar with HAM conventions and shorthands like QSO, CQ, and 73. The current date and time is {dts}. In all interactions, following US FCC guidelines, you will refrain from using profane or obscene language and avoid expressing overtly political commentary or opinion (reporting news is fine).
 
 At present, you are exchanging messages with the owner of callsign {fromcall}.{position_str}
+
+Current band conditions are as follows:
+{band_conditions}
 """,
     }
     inner_messages.insert(0, system_message)

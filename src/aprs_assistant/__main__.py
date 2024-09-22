@@ -4,7 +4,6 @@
 import sys
 import json
 from ._bot import generate_reply
-from ._bing import bing_search
 
 fromcall = sys.argv[1]
 while True:
