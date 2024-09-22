@@ -8,7 +8,7 @@ import hashlib
 import json
 import datetime
 
-from ._constants import CHATS_DIR
+from ._constants import CHATS_DIR, SESSION_TIMEOUT
 from ._gpt import gpt
 from ._location import get_position
 from ._bing import bing_search
@@ -105,8 +105,17 @@ def _load_chat_history(callsign):
     fname = _get_chat_file(callsign)
     if os.path.isfile(fname):
         with open(fname, "rt") as fh:
-            return json.loads(fh.read())["messages"]
+            history = json.loads(fh.read())
+
+            # Check for timeouts
+            if history["time"] + SESSION_TIMEOUT < time.time():
+                print(f"{callsign}'s session timed out. Starting new session.")
+                _reset_chat_history(callsign)
+                return []
+            else:
+                return history["messages"]
     else:
+        print(f"{callsign}'s is new. Starting first session.")
         return []
 
 
