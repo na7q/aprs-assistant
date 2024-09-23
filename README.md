@@ -35,7 +35,7 @@ export APRSFI_API_KEY=<YOUR_KEY>
 The library supports local chats (e.g., for debugging) as follows:
 
 ```console
-python -m aprs-assistant <YOUR_CALLSIGN>
+python -m aprs_assistant <YOUR_CALLSIGN>
 ```
 
 Type `exit` or press `Ctrl-D` to exit.
