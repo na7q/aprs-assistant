@@ -14,9 +14,11 @@ from ._gpt import gpt
 from ._location import get_position
 from ._bing import bing_search
 from ._bandcond import get_band_conditions
+from ._weather import get_weather
 
 from ._tool_definitions import (
     TOOL_WEB_SEARCH,
+    TOOL_USER_WEATHER,
     TOOL_BAND_CONDITIONS,
 )
 
@@ -85,10 +87,16 @@ At present, you are exchanging messages with the owner of callsign {fromcall}.{p
     inner_messages.append(response)
 
     # Determine if it can be answered directly or if we should search
+    tools = [TOOL_WEB_SEARCH, TOOL_BAND_CONDITIONS]
+    
+    # Some tools only become available when we have a position
+    if position is not None:
+        tools.append(TOOL_USER_WEATHER)
+
     inner_messages.append({ "role": "user", "content": f"Based on this, invoke any tools or functions that might be helpful to answer {fromcall}'s question OR just answer directly (e.g., if it's just chit-chat)" })
     response = gpt(
         inner_messages,
-        tools=[TOOL_WEB_SEARCH, TOOL_BAND_CONDITIONS]
+        tools=tools,
     )
     inner_messages.append(response)
 
@@ -104,6 +112,9 @@ At present, you are exchanging messages with the owner of callsign {fromcall}.{p
                 results = bing_search(args["query"])
             elif function_name == TOOL_BAND_CONDITIONS["function"]["name"]:
                 results = get_band_conditions()
+            elif function_name == TOOL_USER_WEATHER["function"]["name"]:
+                country_code = position.get("address", {}).get("country_code", "")
+                results = get_weather(lat=position["latitude"], lon=position["longitude"], metric=False if country_code == "us" else True)
             else:
                 results = f"Unknown function: {function_name}"
 

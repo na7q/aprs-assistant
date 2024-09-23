@@ -16,6 +16,19 @@ TOOL_WEB_SEARCH = {
     },
 }
 
+TOOL_USER_WEATHER = {
+    "type": "function",
+    "function": {
+        "name": "user_weather",
+        "description": "Look up the current weather conditions and 3-day forecast at the user's current (or last-known) location.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
+}
+
 TOOL_BAND_CONDITIONS = {
     "type": "function",
     "function": {

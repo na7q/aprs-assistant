@@ -4,6 +4,7 @@
 import sys
 import json
 from ._bot import generate_reply
+from ._weather import get_weather
 
 fromcall = sys.argv[1]
 while True:
