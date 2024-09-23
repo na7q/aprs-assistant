@@ -4,6 +4,8 @@
 import os
 from .__about__ import __version__
 
+BOT_CALLSIGN = os.environ.get("APRS_ASSISTANT_CALLSIGN", "<NOCALL>")
+
 DATA_DIR = os.path.join(os.getcwd(), "data")
 CACHE_DIR = os.path.join(DATA_DIR, "cache")
 CHATS_DIR = os.path.join(DATA_DIR, "chats")

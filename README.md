@@ -15,6 +15,13 @@ An LLM-based assistant for the Automatic Packet Reporting System (APRS).
 pip install aprs-assistant
 ```
 
+## Callsign
+Your bot needs a callsign! Set with the `APRS_ASSISTANT_CALLSIGN` environment variable.
+
+```console
+export APRS_ASSISTANT_CALLSIGN=<CLEVER_CALLSIGN>
+```
+
 ## API Keys
 At a minimum, this library requires setting an OpenAI API key. Bing and APRS.fi API keys are also used to support various tools and services. Set the, as environment variable in bash, as follows:
 

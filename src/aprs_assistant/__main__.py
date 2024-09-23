@@ -5,6 +5,7 @@ import sys
 import os
 import json
 from ._bot import generate_reply
+from ._constants import BOT_CALLSIGN
 
 if os.environ.get("OPENAI_API_KEY", "").strip() == "":
     raise ValueError("No OPENAI_API_KEY. Please set the OPENAI_API_KEY environment variable.")
@@ -27,4 +28,4 @@ while True:
     if request == "quit" or request == "exit":
         break
     response = generate_reply(fromcall, request)
-    print(f"\nAPNGIX: {response}\n")
+    print(f"\n{BOT_CALLSIGN}: {response}\n")
