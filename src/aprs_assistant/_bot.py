@@ -87,7 +87,11 @@ At present, you are exchanging messages with the owner of callsign {fromcall}.{p
     inner_messages.append(response)
 
     # Determine if it can be answered directly or if we should search
-    tools = [TOOL_WEB_SEARCH, TOOL_BAND_CONDITIONS]
+    tools = [TOOL_BAND_CONDITIONS]
+
+    # API key needed for web search
+    if len(os.environ.get("BING_API_KEY", "").strip()) > 0:
+        tools.append(TOOL_WEB_SEARCH)
     
     # Some tools only become available when we have a position
     if position is not None:

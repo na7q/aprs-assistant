@@ -1,6 +1,11 @@
 # SPDX-FileCopyrightText: 2024-present Adam Fourney <adam.fourney@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+#
+# Adapted from:
+#   AutoGen (Copyright 2024, Microsoft Corporation; MIT Licensed)
+#   https://github.com/microsoft/autogen/blob/headless_web_surfer/autogen/browser_utils/markdown_search.py
+
 import json
 import requests
 import re
@@ -170,3 +175,15 @@ def _markdown_link(anchor, href):
         return f"[{anchor}]({href})"
     except ValueError:  # It's not clear if this ever gets thrown
         return f"[{anchor}]({href})"
+
+def _bing_news_call():
+    request_kwargs = {}
+    request_kwargs["headers"] = {}
+    request_kwargs["headers"]["Ocp-Apim-Subscription-Key"] = os.environ["BING_API_KEY"]
+    request_kwargs["stream"] = False
+
+    # Make the request
+    response = requests.get("https://api.bing.microsoft.com/v7.0/news/search?q=&mkt=en-us", **request_kwargs)
+    response.raise_for_status()
+    results = response.json()
+    return results

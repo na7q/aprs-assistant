@@ -67,7 +67,10 @@ def aprsfi_get_position(callsign):
 
 
 def _aprsfi_get_position(callsign):
-    api_key = os.environ["APRSFI_API_KEY"]
+    api_key = os.environ.get("APRSFI_API_KEY", "").strip()
+    if api_key == "":
+        return None
+    
     headers = { "User-Agent": "aprsd_gpt_plugin" }
     response = requests.get(
         f"https://api.aprs.fi/api/get?name={callsign}&what=loc&apikey={api_key}&format=json",
