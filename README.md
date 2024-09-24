@@ -41,6 +41,22 @@ python -m aprs_assistant <YOUR_CALLSIGN>
 Type `exit` or press `Ctrl-D` to exit.
 
 
+## FCC ULS Integration
+APRS Assistant supports basic callsign lookups using a local copy of the FCC ULS database. This database is about 325 MB and is easily created. 
+
+```
+cd ./tools/parse_fcc_uls
+bash create_db.bash
+cd ../..
+mkdir data
+mv ./tools/parse_fcc_uls/fcc_uls.db data/.
+```
+
+This step only needs to be done once (or when you wish to update the database with new records!)
+
+See `./tools/parse_fcc_uls/README` for more details. 
+
+
 ## Integration
 To integrate `aprs-assistant` into your application, simply use:
 
