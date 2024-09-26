@@ -94,6 +94,10 @@ FROM EN
     LEFT OUTER JOIN AM ON EN.Unique_System_Identifier = AM.Unique_System_Identifier;
 """
 
+create_en_callsign_index = "CREATE INDEX en_callsign_index ON EN (Call_Sign);"
+create_am_callsign_index = "CREATE INDEX am_callsign_index ON AM (Call_Sign);"
+create_en_id_index = "CREATE UNIQUE INDEX en_id_index ON EN (Unique_System_Identifier);"
+create_am_id_index = "CREATE UNIQUE INDEX am_id_index ON AM (Unique_System_Identifier);"
   
 # Connect to the SQLite database  
 conn = sqlite3.connect(db_filename)  
@@ -102,7 +106,11 @@ cursor = conn.cursor()
 # Create the "EN" table  
 cursor.execute(create_en_table_query)  
 cursor.execute(create_am_table_query)  
-cursor.execute(create_view)  
+cursor.execute(create_view)
+cursor.execute(create_en_callsign_index)
+cursor.execute(create_am_callsign_index)
+cursor.execute(create_en_id_index)
+cursor.execute(create_am_id_index)
   
 # Function to insert records into the "EN" table  
 def insert_en_record(record):  

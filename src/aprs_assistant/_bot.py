@@ -8,6 +8,7 @@ import time
 import hashlib
 import json
 import datetime
+import traceback
 from timezonefinder import TimezoneFinderL
 from pytz import timezone, utc
 
@@ -32,30 +33,35 @@ MAX_MESSAGES = 20
 
 def generate_reply(fromcall, message):
 
-    message = message.strip()
-    if len(message) == 0:
-        return "..."
+    try:
+        message = message.strip()
+        if len(message) == 0:
+            return None
 
-    # Meta-commands
-    if message.lower() in ["r", "c", "clr", "reset", "clear"]:
-        _reset_chat_history(fromcall)
-        return "Chat cleared."
+        # Meta-commands
+        if message.lower() in ["r", "c", "clr", "reset", "clear"]:
+            _reset_chat_history(fromcall)
+            return "Chat cleared."
 
-    if message.lower() in ["good bot", "gb"]:
-        _apply_label(fromcall, "good")
-        return "Chat labeled as good."
+        if message.lower() in ["good bot", "gb"]:
+            _apply_label(fromcall, "good")
+            return "Chat labeled as good."
 
-    if message.lower() in ["bad bot", "bb"]:
-        _apply_label(fromcall, "bad")
-        return "Chat labeled as bad."
+        if message.lower() in ["bad bot", "bb"]:
+            _apply_label(fromcall, "bad")
+            return "Chat labeled as bad."
 
-    # Chat
-    messages = _load_chat_history(fromcall)
-    messages.append({ "role": "user", "content": message })
-    response = _generate_reply(fromcall, messages)
-    messages.append({ "role": "assistant", "content": response })
-    _save_chat_history(fromcall, messages)
-    return response
+        # Chat
+        messages = _load_chat_history(fromcall)
+        messages.append({ "role": "user", "content": message })
+        response = _generate_reply(fromcall, messages)
+        messages.append({ "role": "assistant", "content": response })
+        _save_chat_history(fromcall, messages)
+        return response
+
+    except:
+        traceback.print_exc()
+        return "I'm broken. Bug KK7CMT to fix me."
 
 
 def _generate_reply(fromcall, messages):
