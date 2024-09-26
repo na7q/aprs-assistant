@@ -30,6 +30,7 @@ dependencies = [
   "maidenhead",
   "xmltodict",
   "timezonefinder",
+  "pytz",
 ]
 
 [project.urls]

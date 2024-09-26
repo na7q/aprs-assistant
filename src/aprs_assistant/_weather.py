@@ -6,6 +6,7 @@ import json
 import os
 import xmltodict
 import re
+import datetime
 
 from ._cache import read_cache, write_cache
 from ._constants import SECONDS_IN_MINUTE, USER_AGENT
@@ -154,13 +155,25 @@ def _get_noaa_alerts(lat, lon):
         "Accept": "application/ld+json",
         "User-Agent": USER_AGENT 
     }
-    response = requests.get(
-        f"https://api.weather.gov/alerts/active?point={lat},{lon}",
-        headers=headers,
-        stream=False
-    )
-    response.raise_for_status()
-    return response.json()
+
+    try:
+        response = requests.get(
+            f"https://api.weather.gov/alerts/active?point={lat},{lon}",
+            headers=headers,
+            stream=False
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.HTTPError as exc:
+        if exc.response.status_code == 400 and "out of bounds" in exc.response.text:
+            # Return a dummy entry
+            return {
+                "@context": { "@version": "1.1" }, "@graph": [],
+                "title": f"Parameter \"point\" is invalid: out of bounds",
+                "updated": datetime.datetime.now().isoformat(),
+            }
+        else:
+            raise
 
 
 def format_noaa_alerts( alerts, abbreviated=False ):
