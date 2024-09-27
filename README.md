@@ -5,7 +5,10 @@
 
 An LLM-based assistant for the Automatic Packet Reporting System (APRS).
 
-#### Note: This library provides core functionality for an LLM-based APRS chatbot, but does not itself directly handle APRS messaging (RX, or TX). For this, a library like [apsd](https://github.com/craigerl/aprsd) is needed. Instructions for connecting the assistant to the APRS network are forthcoming in a future update.
+> [!IMPORTANT]
+> This library provides core functionality for an LLM-based APRS chatbot, but does not itself directly handle APRS messaging (RX, or TX). **If you want to run APRS Assistant yourself, on the APRS IS network, you should visit the sister project [aprs-assistant-plugin](https://github.com/afourney/aprsd-assistant-plugin), which has everything you need.**
+
+For local development, or to integrate APRS Assistant into other frameworks, read on. For running APRS Assistant, heed the above advice and go to [aprs-assistant-plugin](https://github.com/afourney/aprsd-assistant-plugin) now.
 
 -----
 
