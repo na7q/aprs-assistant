@@ -78,6 +78,18 @@ print(response)
 
 Note: `response` can be None
 
+
+## Data Sources
+
+- APRS location data provided by [aprs.fi](https://aprs.fi/page/api)
+- Weather data provided by [open-meteo](https://open-meteo.com/en/docs)
+- Weather watches, warnings and alerts provided by [weather.gov](https://www.weather.gov/documentation/services-web-api)
+- Reverse geocoding provided by [Nominatim](https://nominatim.org/release-docs/develop/api/Overview/)
+- Band conditions and space weather provided by [hamsql.com](https://www.hamqsl.com/#addrssxml) 
+- FFC call sign information provided by [FCC public access](https://www.fcc.gov/uls/transactions/daily-weekly#weekly-files) program 
+- Web search and news results provided by the [Bing Search API](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
+
+
 ## License
 
 `aprs-assistant` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
