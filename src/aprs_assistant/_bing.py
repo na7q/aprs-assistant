@@ -157,14 +157,17 @@ def bing_search(query, lat=None, lon=None, interleave_results=True, market=None)
     if interleave_results:
         # Interleaved
         for item in results["rankingResponse"]["mainline"]["items"]:
-            _id = item["value"]["id"]
-            if _id in snippets:
-                for s in snippets[_id]:
-                    if "__POS__" in s:
-                        idx += 1
-                        content += s.replace("__POS__", str(idx)) + "\n\n"
-                    else:
-                        content += s + "\n\n"
+            try:
+                _id = item["value"]["id"]
+                if _id in snippets:
+                    for s in snippets[_id]:
+                        if "__POS__" in s:
+                            idx += 1
+                            content += s.replace("__POS__", str(idx)) + "\n\n"
+                        else:
+                            content += s + "\n\n"
+            except KeyError:
+                pass
     else:
         # Categorized
         if len(web_snippets) > 0:
@@ -227,7 +230,8 @@ def _bing_api_call(query, lat=None, lon=None, market=None):
     response = requests.get(
         "https://api.bing.microsoft.com/v7.0/search", **request_kwargs
     )
-    response.raise_for_status()
+    #response.raise_for_status()
+    print(response.text)
     results = response.json()
 
     return results

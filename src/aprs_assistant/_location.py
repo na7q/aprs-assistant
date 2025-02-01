@@ -36,11 +36,11 @@ def get_position(callsign):
     }
 
     if "speed" in latest_position:
-        result["speed_in_kph"] = int(latest_position["speed"])
+        result["speed_in_kph"] = float(latest_position["speed"])
     if "altitude" in latest_position:
-        result["altitude_in_meters"] = int(latest_position["altitude"])
+        result["altitude_in_meters"] = float(latest_position["altitude"])
     if "course" in latest_position:
-        result["heading_in_degrees"] = int(latest_position["course"])
+        result["heading_in_degrees"] = float(latest_position["course"])
 
     if "name" in location_data and len(location_data["name"]) > 0:
         result["name"] = location_data["name"]
